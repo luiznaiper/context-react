@@ -1,49 +1,42 @@
-//No se optimiza con MEMO
+import { Component, createContext, useContext } from 'react';
 
-import { createContext, useContext, useState, memo, useCallback } from 'react';
+const Context1 = createContext('mi value 1');
+const Context2 = createContext('mi value 2');
 
-const Context = createContext();
-
-const CounterProvider = ({ children }) => {
-  const [counter, setCounter] = useState(0);
-
-  const increase = useCallback(() => setCounter((x) => x + 1), []);
-
-  const decrease = useCallback(() => setCounter((x) => x - 1), []);
-
+const Provider = ({ children }) => {
   return (
-    <Context.Provider value={{ counter, increase, decrease }}>
-      {children}
-    </Context.Provider>
+    <Context1.Provider value={'other value 1'}>
+      <Context2.Provider value={'other value 2'}>{children}</Context2.Provider>
+    </Context1.Provider>
   );
 };
 
-const Label = () => {
-  console.log('label');
-  const { counter } = useContext(Context);
-  return <h1>{counter}</h1>;
+class MyComponent extends Component {
+  render() {
+    return (
+      <Context1.Consumer>
+        {(value1) => (
+          <Context2.Consumer>
+            {(value2) => <div>{`${value1} ${value2}`} </div>}
+          </Context2.Consumer>
+        )}
+      </Context1.Consumer>
+    );
+  }
+}
+
+const MyComponent2 = () => {
+  const value1 = useContext(Context1);
+  const value2 = useContext(Context2);
+  return <div>{`${value1}  ${value2}`}</div>;
 };
-
-const Decrease = memo(() => {
-  console.log('decrease');
-  const { decrease } = useContext(Context);
-  return <button onClick={decrease}>Decrease</button>;
-});
-
-const Increase = memo(() => {
-  console.log('increase');
-  const { increase } = useContext(Context);
-  return <button onClick={increase}>Increase</button>;
-});
 
 const App = () => {
   return (
-    <CounterProvider>
-      <Label />
-      <Decrease />
-      <Increase />
-    </CounterProvider>
+    <Provider>
+      <MyComponent />
+      <MyComponent2 />
+    </Provider>
   );
 };
-
 export default App;
